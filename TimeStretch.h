@@ -3,12 +3,13 @@ struct TimeStretch
     //udpates g = grainsize, l = target len (aka stretch factor), comp = pitch compensation
     void update(float g, float l, bool comp)
     {
-        //float pitch compensato, so 200% (2.0) means 2x speed means +12 semitones
+        //float pitch compensator, so 200% (2.0) means 2x speed means +12 semitones
         pitchCompensator = comp ? l : 1;
         stretchComp = comp;
         grainSize = g;
         stretchFactor = l;
 
+        //various other factors we need, could do with better names
         gInv = 1.0 / grainSize;
         m = 1 / (grainSize * c);
         
@@ -128,6 +129,13 @@ struct TimeStretch
         }
     }
     
+    /*
+    two grains playing at once,
+    "grainPlaying" is the main grain that is currently playing and swap from 0 to 1 by continually calling advance(),
+    "grain" indicates the start of the grain for grainPlaying and !grainPlaying
+    "phase" is the current phase for the two grains, in samples. so 0 to grainSize.
+    grainOffset is how much the next grain gets offset. goes from 0 to grainSize * (1.0 - c)   //where c is crossfade amount
+    */
     double phase[2] = {0, 0};
     double grain[2] = {0, 0};
     double totalPhase = 0;
@@ -144,12 +152,14 @@ struct TimeStretch
     double stretchFactorInverse = 1;
         
     double gInv = 1.0 / grainSize;
+    //CROSSFADE AMOUNT
     double c = 0.4;
     double cPrime = (1.0 - c);
     double cInv = 1.0/c;
     
     double m = 1 / (grainSize * c);
     
+    //fade point one and fade point two
     double f1 = grainSize * c;
     double f2 = grainSize * cPrime;
 };
